@@ -1,0 +1,27 @@
+
+#sign-up {
+  width: 500px;
+  padding: 5px;
+}
+label {
+  float: left;
+  clear: left;
+}
+input {
+  float: right;
+  display: inline-block;
+  margin-right: 200px;
+}
+#sign-up input, #sign-up label {
+  margin-bottom: 5px;
+}
+div #submit {
+  float: left;
+  clear: left;
+}
+.error {
+  float: right;
+  color: red;
+  margin-top: -25px;
+  clear: both;
+}

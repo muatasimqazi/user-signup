@@ -1,81 +1,58 @@
-from flask import Flask, request, redirect
-import cgi
+from flask import Flask, request, redirect, render_template
+import cgi, re
 
 app = Flask(__name__)
-app.config['DEBUG'] = False
+app.config['DEBUG'] = True
 
-form = """
-    <!DOCTYPE html>
-    <html>
-        <head>
-            <title>User Signup</title>
-            <style>
-            #sign-up {{
-                width: 300px;
-                padding: 5px;
-            }}
-            label {{
-                float: left;
-                clear: left;
-            }}
-            input {{
-                float: right;
-                display: inline-block;
-            }}
-            #sign-up input, #sign-up label {{
-                margin-bottom: 5px;
-            }}
-            div #submit {{
-                float: left;
-                clear: left;
-            }}
-            </style>
-        </head>
-        <body>
 
-        <h1>Signup</h1>
-          <div id="sign-up">
-              <form method="POST">
 
-              <div>
-                  <label for="rot">Username </label>
-                  <input type="text" name="username">
-              </div>
 
-              <div>
-                  <label for="rot">Password </label>
-                  <input type="password" name="password">
-              </div>
-
-              <div>
-                  <label for="rot">Verify Password </label>
-                  <input type="password" name="password">
-              </div>
-
-              <div>
-                  <label for="rot">Email (optional) </label>
-                  <input type="text" name="email">
-              </div>
-
-              <br>
-              <div id="submit">
-              <input type="submit">
-              </div>
-              </form>
-
-          </div>
-        </body>
-    </html>
-"""
+def is_invalid(text):
+    return re.search(r"\s+", text) or re.search(r"^.{0,2}$", text) or re.search(r"^.{20,}$", text)
 
 @app.route('/', methods=['POST'])
 def signup():
-    encrypted_str = rotate_string(str_2,int(str_1))
 
-    return form.format(encrypted_str)
+    username = request.form['username']
+    password = request.form['password']
+    verifypassword = request.form['verfiy-password']
+    email = request.form['email']
+
+    username_error = ''
+    password_error = ''
+    verfiy_error = ''
+    email_error = ''
+
+    if is_invalid(username):
+        username_error = "That's not a valid username"
+    if is_invalid(password):
+        password_error = "That's not a valid password"
+    if verifypassword == '':
+        verfiy_error = "That's not a valid password"
+    if verifypassword != password:
+        verfiy_error = "Passwords don't match"
+    if email != '' and (email.count("@") != 1 or email.count(".") != 1 or is_invalid(email)):
+        email_error = "That's not a valid email"
+
+
+    if not (username_error or password_error or verfiy_error or email_error):
+        return redirect('/welcome?username=' + username)
+    else:
+        return render_template('signin.html',
+            username = username,
+            email = email,
+            username_error = username_error,
+            password_error = password_error,
+            verfiy_error = verfiy_error,
+            email_error = email_error)
+
+@app.route("/welcome")
+def welcome():
+    username = request.args.get('username')
+    return render_template('welcome', username=username)
+
 
 @app.route("/")
 def index():
-    return form.format('')
-
+    return render_template('signin.html')
 app.run()
