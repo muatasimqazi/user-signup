@@ -6,16 +6,20 @@ app.config['DEBUG'] = True
 
 
 
+def valid_username(username):
+    return re.search("^[A-z][A-z|\.|\s]+$", username) != None
 
-def is_invalid(text):
-    return re.search(r"\s+", text) or re.search(r"^.{0,2}$", text) or re.search(r"^.{20,}$", text)
+def valid_password(password):
+    return re.search(r"[a-z]", password) or re.search(r"[!@$&]", password) or re.search(r"[A-Z]", password) or re.search(r"\d", password)
+
+def valid_email(email):
+    return re.search(r'[\w.-]+@[\w.-]+.\w+', email)
 
 @app.route('/', methods=['POST'])
 def signup():
-
     username = request.form['username']
     password = request.form['password']
-    verifypassword = request.form['verfiy-password']
+    verify = request.form['verfiy-password']
     email = request.form['email']
 
     username_error = ''
@@ -23,24 +27,19 @@ def signup():
     verfiy_error = ''
     email_error = ''
 
-    if is_invalid(username):
+    if not valid_username(username):
         username_error = "That's not a valid username"
-    if is_invalid(password):
+    if not valid_password(password) and verify == '':
         password_error = "That's not a valid password"
-    if verifypassword == '':
-        verfiy_error = "That's not a valid password"
-    if verifypassword != password:
+    if verify != password:
         verfiy_error = "Passwords don't match"
-    if email != '' and (email.count("@") != 1 or email.count(".") != 1 or is_invalid(email)):
+        password_error = ''
+    if not valid_email(email) and len(email) > 0:
         email_error = "That's not a valid email"
-
-
     if not (username_error or password_error or verfiy_error or email_error):
         return redirect('/welcome?username=' + username)
     else:
-        return render_template('signin.html',
-            username = username,
-            email = email,
+        return render_template('index.html',
             username_error = username_error,
             password_error = password_error,
             verfiy_error = verfiy_error,
@@ -49,10 +48,13 @@ def signup():
 @app.route("/welcome")
 def welcome():
     username = request.args.get('username')
-    return render_template('welcome', username=username)
-
+    return render_template('welcome.html', username=username)
 
 @app.route("/")
 def index():
-    return render_template('signin.html')
+    return render_template('index.html',
+    username_error = '',
+    password_error = '',
+    verfiy_error = '',
+    email_error = '')
 app.run()
