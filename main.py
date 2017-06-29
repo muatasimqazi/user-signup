@@ -4,14 +4,15 @@ import cgi, re
 app = Flask(__name__)
 app.config['DEBUG'] = True
 
-
-
+# validate username and check if it's a letter an
 def valid_username(username):
     return re.search("^[A-z][A-z|\.|\s]+$", username) != None
 
+# valdiate password for alphabets, symbols, and digits
 def valid_password(password):
     return re.search(r"[a-z]", password) or re.search(r"[!@$&]", password) or re.search(r"[A-Z]", password) or re.search(r"\d", password)
 
+# validate email based on lenghth and @ symbol
 def valid_email(email):
     return re.search(r'[\w.-]+@[\w.-]+.\w+', email)
 
@@ -22,6 +23,7 @@ def signup():
     verify = request.form['verfiy-password']
     email = request.form['email']
 
+    # initialize error variables
     username_error = ''
     password_error = ''
     verfiy_error = ''
@@ -29,15 +31,20 @@ def signup():
 
     if not valid_username(username):
         username_error = "That's not a valid username"
+
     if not valid_password(password) and verify == '':
         password_error = "That's not a valid password"
+
     if verify != password:
         verfiy_error = "Passwords don't match"
         password_error = ''
+
     if not valid_email(email) and len(email) > 0:
         email_error = "That's not a valid email"
+
     if not (username_error or password_error or verfiy_error or email_error):
         return redirect('/welcome?username=' + username)
+
     else:
         return render_template('index.html',
             username_error = username_error,
